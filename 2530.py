@@ -1,8 +1,8 @@
-# h,m,s = map(int, input().split())
-h,m,s = 14,20,0
+h,m,s = map(int, input().split())
+# h,m,s = 14,20,0
 
-# t = int(input())
-t = 200
+t = int(input())
+# t = 200
 t_ = h*3600 + m*60 + s
 
 t += t_
