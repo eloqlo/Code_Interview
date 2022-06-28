@@ -92,5 +92,6 @@ if __name__ == '__main__':
    words = list(words)
    words = merge_sort(words)  # 길이로 정렬
    words = alphabet_sort(words)  # 길이별 알파벳 순 정렬
+   print('start!')
    for w in words:
       print(w)
