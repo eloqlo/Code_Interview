@@ -10,9 +10,14 @@ for i in word:
         vocab[i] = 1    # 없으면 추가
 
 val = list(vocab.values())
+max_val = max(val)
 
-if len(set(val))!=len(val):
+count = 0
+for k in val:
+    if k==max_val: count+=1
+
+if count>1:
     print('?')
 else:
     max_key = max(vocab, key=vocab.get)
-    print(max_key)
+    print(max_key.upper())
