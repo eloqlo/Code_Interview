@@ -5,8 +5,6 @@ https://www.acmicpc.net/blog/view/109
 - in 연산자: Sequential Search - O(N)
 
 """
-from cmath import inf
-
 
 n = int(input())
 a = list(map(int,input().split()))
