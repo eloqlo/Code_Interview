@@ -32,8 +32,12 @@
     
 # print(count)
 
+########################################################################
+
 n = int(input())
 a = sorted([list(map(int, input().split())) for _ in range(n)])
+
+# 연속 증가순열 개수
 
 dp=[]
 for i in range(n):
