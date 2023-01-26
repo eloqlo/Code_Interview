@@ -1,3 +1,5 @@
+# ! Wrong !
+
 # # input - 순서쌍
 # n = int(input())
 # li=[]

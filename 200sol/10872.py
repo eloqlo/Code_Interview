@@ -4,7 +4,6 @@ val = 1
 def printer(n):
     global val
     if n==0:
-        print(1)
         return
     
     val*=n
