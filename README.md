@@ -1,3 +1,3 @@
-# CODE_INTERVIEW
+# 200_Algorithm
 
-백준 stacking folder 입니다.
+프로그래밍 실력 배양을 위한 알고리즘 200문제 풀이 스터디
