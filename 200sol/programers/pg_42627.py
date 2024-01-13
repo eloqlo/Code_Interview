@@ -1,5 +1,8 @@
 # https://school.programmers.co.kr/learn/courses/30/lessons/42627
-def solution(jobs):
+"""
+disk controler
+"""
+def my_solution(jobs):
     jobs.sort(key=lambda x:(x[0],x[1]))   # 요청시각, 짧은 수행시간 으로 정렬
     time_counter=0
     
