@@ -1,18 +1,31 @@
 def solution(cards):
     cards = list(map(lambda x:x-1, cards))
     hops=[]
-    unsearched_indices=[i for i in range(len(cards))]
-    
-    while len(unsearched_indices)==0:
-        ptr=unsearched_indices[0]
-        hop=[]
-        while ptr!=False:
-            unsearched_indices.pop(ptr)
-            hop.append(cards.pop(ptr))
-            cards.insert(ptr, False)
-            ptr = cards[ptr]
+    flag=False
+    for _ in range(len(cards)):
+        # 카드 다 조회했으면 끝.
+        count=0
+        for i,card in enumerate(cards):
+            if card==None:
+                count+=1
+            if count==len(cards):
+                flag=True
+        if flag:
+            break
+        # None이 아닌 다음 card를 가져온다
+        for card in cards:
+            if card!=None:
+                ptr=card
+                break
+        # 이번 hop 계산
+        hop=[] 
+        while cards[ptr]!=None:
+            nxt_ptr=cards.pop(ptr)
+            hop.append(ptr)
+            cards.insert(ptr, None)
+            ptr=nxt_ptr
         hops.append(hop)
-    print(hops)
+    
     if len(hops)==1:
         answer=0
     else:
@@ -21,3 +34,8 @@ def solution(cards):
         answer = hops[-1]*hops[-2]
     
     return answer
+
+
+if __name__=="__main__":
+    li=[4,2,3,6,1,5]
+    print(solution(li))
