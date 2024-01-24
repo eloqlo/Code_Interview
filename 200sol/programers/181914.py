@@ -1,2 +1,2 @@
 ddef solution(number):
-    return int(number)%9
+``    return int(number)%9
