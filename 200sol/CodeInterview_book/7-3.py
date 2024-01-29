@@ -1,39 +1,31 @@
-import sys
+# 떡의 개수, 요청 떡 길이
+N, request_len = list(map(int, input().split()))
+# 떡의 개별 높이 정보
+array = list(map(int, input().split()))
 
-N,M = map(int,input().split())
-li = list(map(int, sys.stdin.readline().rstrip().split()))
-li.sort(reverse=True)   # O(NlogN)
-
-H = M
-H_prev = 0
-counter_prev=0
+st=0
+ed=max(array)   # O(N)
+result=0
 for _ in range(N):
-    norm = ele[0]-H
-    counter = 0
-    for ele in li:
-        counter += ele-norm
+    mid= (st+ed)//2
+    total=0
+    
+    for ele in array:
+        if ele>mid:
+            total+=ele-mid
+    
+    # 짧으면, 높이를 줄여야겠쥐?
+    if total<request_len:
+        ed = mid-1
+        if st>ed:
+            break
+    elif total>request_len:
+        result=mid   # 정답이 될 가능성이 있쥬?
+        st = mid+1  # 범위를 높여서 간 봐볼까?
+        if st>ed:
+            break
+    else:
+        result = mid
+        break
 
-    if counter==M:
-        return H
-    elif counter>M:
-        H_new -= abs(H-H_prev)//2
-        if H_new == H_prev:
-            n1 = counter_prev-M
-            n2 = counter-M
-            if n1<n2 and n1>=0:
-                return H_prev
-            else:
-                return H
-        H_prev = H
-        H = H_new
-    elif counter<M:
-        H_new += abs(H-H_prev)//2
-        if H_new == H_prev:
-            n1 = counter_prev-M
-            n2 = counter-M
-            if n1<n2 and n1>=0:
-                return H_prev
-            else:
-                return H
-        H_prev = H
-        H = H_new
+print(result)
