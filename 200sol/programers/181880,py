@@ -1,0 +1,12 @@
+def solution(num_list):
+    count=0
+    for e in num_list:
+        while e!=1:
+            if e%2==0:
+                e/=2
+                count+=1
+            else:
+                e= (e-1)/2
+                count+=1
+    return count
+            
