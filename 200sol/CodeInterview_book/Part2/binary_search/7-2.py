@@ -10,7 +10,9 @@ requests = list(map(int,input().split()))
 def bs(target, archive, st, ed):
     if st>ed:
         return False
+    
     mid = (st+ed)//2   # check
+    
     if archive[mid]==target:
         return True
     elif archive[mid]<target:
