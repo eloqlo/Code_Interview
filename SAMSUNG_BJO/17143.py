@@ -1,72 +1,55 @@
 R,C,M = map(int,input().split())
-sharks_arr=[]
+sharks_dict=[[] for _ in range(C+1)]
 for _ in range(M):
-    sharks_arr.append(list(map(int, input().split())))
+    r,c,s,d,z = map(int, input().split())
+    sharks_dict[c].append((r,c,s,d,z))
 
-def solution(debug):
-    global sharks_arr
+def solution(sharks_dict):
     result = 0
-    dead_sharks = []
-    
-    for man_col_idx in range(1,C+1):
 
-        # debug: print board before man catch shark
-        if debug:
-            board_print = [['#'] * (C + 2)]
-            board_print += [["#"] + ['.']*C + ["#"] for _ in range(R)]
-            board_print.append(['#'] * (C + 2))
-            for r,c,s,d,z in sharks_arr:
-                if r==-1:
-                    continue
-                board_print[r][c] = z
-            print(f"__________________at: {man_col_idx}____________________")
-            for line in board_print:
-                for ele in line:
-                    print(ele, end=' ')
-                print()
+    #1 사람 우측 이동
+    for mi in range(1,C+1):
 
-        #1 make inital board
-        board = [[(-1,-1)]*(C+2) for _ in range(R+2)]
+        # 상어 먹고(t)
+        # O(M)
+        eat_flag = False
+        min_r = 101
+        min_r_z = -1
+        min_idx = -1
+        for idx,shark_info in enumerate(sharks_dict[mi]):
+            r,c,s,d,z = shark_info
+            if r < min_r:
+                min_r = r
+                min_r_z = z
+                min_idx = idx
+                eat_flag = True
+        if eat_flag:
+            # 그 상어 없애고, result에 질량 업데이트
+            sharks_dict[mi].pop(min_idx)
+            result += min_r_z
 
-        for si in range(len(sharks_arr)):
-            if si not in dead_sharks:
-                r, c, s, d, z = sharks_arr[si]
-                board[r][c] = (si, z)
+        # 상어 움직이고, 업데이트(t+1)
+        # O(M)
+        new_sharks_dict = [[] for _ in range(C+1)]
+        checker = {}
+        for sharks_per_col in sharks_dict:
+            for r,c,s,d,z in sharks_per_col:
+                # 새로운 포지션 구하고
+                # O(C)
+                nr, nc, nd = get_nxt_position_direction(r,c,s,d)
+                try:    # 그자리에 상어 있으면
+                    ps, pd, pz = checker[(nr,nc)]
+                    if pz < z:    # 더 큰애를 저장
+                        checker[(nr,nc)] = s,nd,z
+                        new_sharks_dict[nc].append((nr,nc,s,nd,z))
+                        new_sharks_dict[nc].remove((nr,nc,ps,pd,pz))    #TODO SC
+                except:
+                    checker[(nr,nc)] =  s,nd,z
+                    new_sharks_dict[nc].append((nr, nc, s, nd, z))
 
-        #2 catch shark if man can.
-        for board_row_idx in range(1, R + 1):
-            if board[board_row_idx][man_col_idx][1] >= 1:
-                si, z = board[board_row_idx][man_col_idx]
-                dead_sharks.append(si)
-                result += z
-                break
+        sharks_dict = new_sharks_dict
+        del new_sharks_dict
 
-        #3 update sharks position
-        tmp_sharks_arr = []
-        board = [[(-1, -1)] * (C + 2) for _ in range(R + 2)]
-        for si in range(len(sharks_arr)):
-            r, c, s, d, z = sharks_arr[si]
-            # except dead sharks
-            if si in dead_sharks:
-                tmp_sharks_arr.append([-1,-1,-1,-1,-1])
-                continue
-            
-            #get next position, direction
-            nr, nc, nd = get_nxt_position_direction(r,c,s,d)
-            tmp_sharks_arr.append((nr,nc,s,nd,z))
-            
-            # 이동한 위치 기반으로 죽은 상어 솎아내기
-            _si, _z = board[nr][nc]
-            if _si == -1:
-                board[nr][nc] = (si, z)
-            else:
-                if _z < z:
-                    board[nr][nc] = (si, z)
-                    dead_sharks.append(_si)
-                else:
-                    dead_sharks.append(si)
-        sharks_arr = tmp_sharks_arr
-    
     return result
 
 
@@ -168,8 +151,5 @@ def debug_nxt_pos(nR,nC, r,c,s, d):
         print()
 
 
-if __name__ == "__main__":
-    result = solution(debug=False)
-    print( result )
-
-    # debug_nxt_pos(4,5, 2,2,14, 1)
+result = solution(sharks_dict=sharks_dict)
+print( result )
