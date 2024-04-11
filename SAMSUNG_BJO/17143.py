@@ -4,6 +4,8 @@ for _ in range(M):
     r,c,s,d,z = map(int, input().split())
     sharks_dict[c].append((r,c,s,d,z))
 
+
+# 직관적이고 계층적인 풀이, 중복되는 iteration을 최대한 줄였다.
 def solution(sharks_dict):
     result = 0
 
@@ -53,6 +55,7 @@ def solution(sharks_dict):
     return result
 
 
+# 이동 규칙을 정확히 찾기 (1 Hour)
 def position_overflow_minus(ni, N):
     val = (-ni)%(N-1)
     if ((-ni)//(N-1))%2 == 0:
@@ -116,6 +119,7 @@ def get_nxt_position_direction(r,c,s,d):
     return nr, nc, nd
 
 
+# 디버깅 (1 Hour - speed up 요망)
 def debug_nxt_pos(nR,nC, r,c,s, d):
     global  R, C
     R = nR
