@@ -1,137 +1,202 @@
-def solution():
-    global N,M,arr,cam_li
-
-    dfs(0,[])
-
-def dfs(idx, cam_di_li):
-    global cam_li, arr
-    if idx == len(cam_li):
-        count_result_space(cam_di_li, arr)
-        return
-
-    now_cam, now_r, now_c = cam_li[idx]
-
-    if now_cam == 2:
-        dfs(idx + 1, cam_di_li + [0])
-        dfs(idx + 1, cam_di_li + [1])
-    elif now_cam == 5:
-        dfs(idx + 1, cam_di_li + [0])
-    elif now_cam == 1 or now_cam == 3 or now_cam == 4:
-        dfs(idx + 1, cam_di_li + [0])
-        dfs(idx + 1, cam_di_li + [1])
-        dfs(idx + 1, cam_di_li + [2])
-        dfs(idx + 1, cam_di_li + [3])
-    else:
-        raise
-
-
-# 현재 cam_di_li 조합에 대한 사각지대 크기 계산
-counter=0
-def count_result_space(cam_di_li, arr):
-    global cam_li, min_space, counter
-    counter+=1
-    dr = [0,0,1,-1]
-    dc = [1,-1,0,0]
-
-    for cam_idx in range(len(cam_li)):
-        di = cam_di_li[cam_idx]
-        cam, r, c = cam_li[cam_idx]
-        if cam == 1 or cam == 3 or cam == 4:
-            for num in range(1,8+1):
-                nr = r + dr[di]*num
-                nc = c + dc[di]*num
-                if 0 <= nr <= N - 1 and 0 <= nc <= M - 1:
-                    if arr[nr][nc] == 6:
-                        break
-                    arr[nr][nc] = '#'
-                else:
-                    break
-        elif cam == 2:
-            if di==0:   # row
-                for num in range(1, 8 + 1):
-                    nr = r + dr[0] * num
-                    nc = c + dc[0] * num
-                    if 0 <= nr <= N - 1 and 0 <= nc <= M - 1:
-                        if arr[nr][nc] == 6:
-                            break
-                        arr[nr][nc] = '#'
-                    else:
-                        break
-                for num in range(1, 8 + 1):
-                    nr = r + dr[1] * num
-                    nc = c + dc[1] * num
-                    if 0 <= nr <= N - 1 and 0 <= nc <= M - 1:
-                        if arr[nr][nc] == 6:
-                            break
-                        arr[nr][nc] = '#'
-                    else:
-                        break
-            elif di==1:  # col
-                for num in range(1, 8 + 1):
-                    nr = r + dr[2] * num
-                    nc = c + dc[2] * num
-                    if 0 <= nr <= N - 1 and 0 <= nc <= M - 1:
-                        if arr[nr][nc] == 6:
-                            break
-                        arr[nr][nc] = '#'
-                    else:
-                        break
-                for num in range(1, 8 + 1):
-                    nr = r + dr[3] * num
-                    nc = c + dc[3] * num
-                    if 0 <= nr <= N - 1 and 0 <= nc <= M - 1:
-                        if arr[nr][nc] == 6:
-                            break
-                        arr[nr][nc] = '#'
-                    else:
-                        break
-        elif cam == 5:
-            for di in range(4):
-                for num in range(1, 8 + 1):
-                    nr = r + dr[di] * num
-                    nc = c + dc[di] * num
-                    if 0 <= nr <= N - 1 and 0 <= nc <= M - 1:
-                        if arr[nr][nc] == 6:
-                            break
-                        arr[nr][nc] = '#'
-                    else:
-                        break
-        else:
-            print("Error: count_result_space() - cam_li - cam")
-            raise
-
-    # count current remain space
-    count=0
+def print_arr(arr):
+    # print arr_
+    print()
     for line in arr:
-        for ele in arr:
-            if ele==0:
-                count+=1
-
-    # DEBUG
-    print(f"________ solution N.{counter} ________")
-    for line in arr:
-        for ele in arr:
-            print(ele, end=" ")
+        for ele in line:
+            print(ele, end=' ')
         print()
 
-    min_space = min(min_space, count)
+def solution(idx, arr):
+    global min_val, cctv_arr
 
-if __name__=="__main__":
-    results=[]
-    T = int(input())
-    for _ in range(T):
-        N,M = map(int, input().split())
-        arr = [[0]*M for _ in range(N)]
-        cam_li = []
-        min_space = 1000
-        for r in range(N):
-            for c, ele in enumerate(map(int, input().split())):
-                arr[r][c] = ele
-                if ele!=0 and ele!=6:
-                    cam_li.append([ele,r,c])
+    # copy
+    arr_ = []
+    for line in arr:
+        arr_.append(line.copy())
 
-        solution()
-        results.append(min_space)
+    # 종결조건
+    if idx == len(cctv_arr):
+        # count 사각지대
+        counter = 0
+        for line in arr_:
+            for ele in line:
+                if ele == 0:
+                    counter += 1
+        min_val = min(min_val, counter)
+        return
 
-    for num in range(T):
-        print(f"#{num+1} {results[num]}")
+    # dfs
+    for di in range(4):
+        i,j = cctv_arr[idx]
+        cv = arr_[i][j]     # cctv value
+        if cv==2 and di==2:
+            break
+        if cv==5 and di==1:
+            break
+        new_arr = get_new_map(di, arr_, idx)     # 현재 direction, cctv_val 따라서 새로운 arr 만듦
+        solution(idx+1, new_arr)
+
+def east(arr, i,j):
+    global M
+    # 동
+    if j < M - 1:
+        for nj in range(j + 1, M):
+            if arr[i][nj] == 0:
+                arr[i][nj] = '#'
+            elif arr[i][nj] != 6:
+                continue
+            else:
+                # 벽
+                break
+    return arr
+def west(arr, i,j):
+    global M
+    # 서
+    if j > 0:
+        for nj in range(j - 1, -1, -1):
+            if arr[i][nj] == 0:
+                arr[i][nj] = '#'
+            elif arr[i][nj] != 6:
+                continue
+            else:
+                # 벽
+                break
+    return arr
+def south(arr,i,j):
+    global N
+    # 남
+    if i < N - 1:
+        for ni in range(i + 1, N):
+            if arr[ni][j] == 0:
+                arr[ni][j] = '#'
+            elif arr[ni][j] != 6:
+                continue
+            else:
+                # 벽
+                break
+    return arr
+def north(arr,i,j):
+    global N
+    # 북
+    if i>0:
+        for ni in range(i - 1, -1, -1):
+            if arr[ni][j] == 0:
+                arr[ni][j] = '#'
+            elif arr[ni][j] != 6:
+                continue
+            else:
+                # 벽
+                break
+    return arr
+
+def get_new_map(di, arr, idx):
+    global cctv_arr, N, M
+
+    cur_arr = []
+    for line in arr:
+        cur_arr.append(line.copy())
+
+    i,j = cctv_arr[idx]
+    cctv_type = cur_arr[i][j]
+
+    if cctv_type == 1:
+        if di==0:
+            # 동
+            new_arr = east(cur_arr,i,j)
+        elif di==1:
+            # 서
+            new_arr = west(cur_arr,i,j)
+        elif di==2:
+            # 남
+            new_arr = south(cur_arr, i, j)
+        elif di==3:
+            # 북
+            new_arr = north(cur_arr, i, j)
+    elif cctv_type == 2:
+        # 가로
+        if di==0:
+            new_arr = east(cur_arr,i,j)
+            new_arr = west(new_arr,i,j)
+        # 세로
+        elif di==1:
+            new_arr = south(cur_arr,i,j)
+            new_arr = north(new_arr,i,j)
+        else:
+            raise Exception("direction index error ! in get_new_map !")
+    elif cctv_type == 3:
+        if di==0:
+            new_arr = north(cur_arr,i,j)
+            new_arr = east(new_arr,i,j)
+        elif di==1:
+            new_arr = south(cur_arr, i, j)
+            new_arr = east(new_arr, i, j)
+        elif di==2:
+            new_arr = south(cur_arr, i, j)
+            new_arr = west(new_arr, i, j)
+        elif di==3:
+            new_arr = north(cur_arr, i, j)
+            new_arr = west(new_arr, i, j)
+    elif cctv_type == 4:
+        if di == 0:
+            new_arr = north(cur_arr, i, j)
+            new_arr = east(new_arr, i, j)
+            new_arr = south(new_arr,i,j)
+        elif di == 1:
+            new_arr = south(cur_arr, i, j)
+            new_arr = east(new_arr, i, j)
+            new_arr = west(new_arr, i, j)
+        elif di == 2:
+            new_arr = south(cur_arr, i, j)
+            new_arr = west(new_arr, i, j)
+            new_arr = north(new_arr, i, j)
+        elif di == 3:
+            new_arr = north(cur_arr, i, j)
+            new_arr = west(new_arr, i, j)
+            new_arr = east(new_arr, i, j)
+    elif cctv_type == 5:
+        new_arr = north(cur_arr, i, j)
+        new_arr = west(new_arr, i, j)
+        new_arr = east(new_arr, i, j)
+        new_arr = south(new_arr, i, j)
+    else:
+        print("error: cctv_type error ", cctv_type)
+        raise
+
+    return new_arr
+
+
+"""baekjun version output"""
+N,M = map(int, input().split())
+arr = []
+cctv_arr=[]
+for i in range(N):
+    line = list(map(int, input().split()))
+    for j in range(M):
+        if 0<line[j]<6:
+            cctv_arr.append([i,j])
+    arr.append(line)
+min_val = 8*8
+
+solution(0, arr)
+print(min_val)
+
+
+# """samsung version output"""
+# K = int(input())
+# outputs=[]
+# for i in range(K):
+#     N, M = map(int, input().split())
+#     arr = []
+#     cctv_arr = []
+#     min_val = 8 * 8
+#     for i in range(N):
+#         line = list(map(int, input().split()))
+#         for j in range(M):
+#             if 0 < line[j] < 6:
+#                 cctv_arr.append([i, j])
+#         arr.append(line)
+#     solution(0,arr)
+#     outputs.append(min_val)
+#
+# for idx, output in enumerate(outputs):
+#     print(f"#{idx+1} {output}")
