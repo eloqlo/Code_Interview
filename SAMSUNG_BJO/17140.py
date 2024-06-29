@@ -23,7 +23,6 @@ def change(arr):
                 new_arr[c][r] = arr[r][c]
     else:
         new_arr = [line.copy() for line in arr]
-
         # 줄 별로 정렬 실행
     max_line_len = 0
     for line_idx, line in enumerate(new_arr):
