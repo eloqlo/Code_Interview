@@ -51,8 +51,8 @@ def count_squares(arr):
     return count
 
 N=int(input())
-dc=[]
+del_count=[]
 for _ in range(N):
-    dc.append(list(map(int,input().split())))
+    del_count.append(list(map(int, input().split())))
 
-solution(dc)
+solution(del_count)
