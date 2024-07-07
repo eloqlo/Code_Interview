@@ -1,13 +1,6 @@
-def pm(arr):
-    for l in arr:
-        for e in l:
-            if e==-1:
-                print(' ', end='\t')
-            elif e=='S':
-                print('SHK', end='\t')
-            else:
-                print(e, end='\t')
-        print()
+"""
+나는 board 중심으로 이용하며 코드 작성함. 삼성때도 그랬고.
+"""
 
 def solution(arr,fish):
     global max_score, dr, dc
@@ -15,12 +8,11 @@ def solution(arr,fish):
     fi = arr[1][1]
     arr[1][1] = 'S'
     shark = fish[fi]
-    fish[fi]=False
+    fish[fi] = False
 
-    arr,fish = move(arr,fish)
+    move(arr,fish)
 
     sr,sc,sd = shark
-    score = 0
     edible = []
     for i in range(1, 4):
         nr, nc = sr + dr[sd] * i, sc + dc[sd] * i
@@ -28,23 +20,22 @@ def solution(arr,fish):
             break
         elif type(arr[nr][nc]) == int:
             edible.append(arr[nr][nc])
-
     if len(edible) == 0:
-        max_score = max(max_score, score + (fi + 1))
+        max_score = max(max_score, 0 + (fi + 1))
         return
     else:
         for e_fi in edible:
-            dfs(arr, fish, shark, e_fi, score + (fi + 1))
+            dfs(arr, fish, shark, e_fi, 0 + (fi + 1), 1)
 
     print(max_score)
 
 def move(arr,fish):
+    global dr, dc
+
     for fi in range(16):
         if fish[fi] == False:
             continue
-        fd = fish[fi][2]
-        fr, fc = fish[fi][0], fish[fi][1]
-
+        fr, fc, fd = fish[fi]
         for di in range(fd,fd+8):
             di = di%8
             nr, nc = fr+dr[di], fc+dc[di]
@@ -65,23 +56,29 @@ def move(arr,fish):
                     fish[tmp_fi][1] = fc
                     fish[fi] = [nr, nc, di]
                 break
-    return arr, fish
 
-def dfs(arr_og, fish, shark, fi, score):
+def dfs(arr_og, fish_og, shark, fi, score, depth):
     global max_score,dr,dc
     arr = [l.copy() for l in arr_og]
+    fish=[]
+    for l in fish_og:
+        if type(l)==list:
+            fish.append(l.copy())
+        else:
+            fish.append(l)
 
     # EAT
     fr, fc, fd = fish[fi]
     sr, sc, sd = shark
-    arr[fr][fc] = 'S'
     arr[sr][sc] = '_'
-    new_shark = [fr,fc,fd]
+    arr[fr][fc] = 'S'
+    new_shark = [fr, fc, fd]
     fish[fi] = False
 
-    arr,fish = move(arr,fish)
+    move(arr,fish)
 
     edible = []
+    sr, sc, sd = new_shark
     for i in range(1,4):
         nr, nc = sr+dr[sd]*i, sc+dc[sd]*i
         if arr[nr][nc]==-1:
@@ -94,7 +91,7 @@ def dfs(arr_og, fish, shark, fi, score):
         return
     else:
         for e_fi in edible:
-            dfs(arr,fish,new_shark,e_fi,score + (fi+1))
+            dfs(arr, fish, new_shark, e_fi, score+(fi+1), depth+1)
 
 max_score = 0
 dr = [-1, -1, 0, 1, 1, 1, 0, -1]
