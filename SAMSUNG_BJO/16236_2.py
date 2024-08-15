@@ -6,8 +6,6 @@ def solution():
         # print_arr(total_time)
         if update_result == False:
             break
-
-
     return total_time
 
 def print_arr(t):
