@@ -39,12 +39,13 @@ def solution():
 
         #1.2 turn into 1d
         A_li = []
-        break_flag=False
-        iter_times=1
+        break_flag = False
+        iter_times = 1
         nr,nc = sr,sc
+
         for di in range(N*N):
             di = di%4
-            tmp=[]
+            tmp = []
             for _ in range(iter_times):
                 nr,nc = nr+dr2[di], nc+dc2[di]
                 if 0<=nr<N and 0<=nc<N:
@@ -54,9 +55,9 @@ def solution():
                 else:
                     break_flag=True
                     break
+            A_li += tmp     # ERROR FOUND
             if break_flag:
                 break
-            A_li += tmp
             iter_times += di%2
 
         #2 pop marbles
@@ -91,8 +92,11 @@ def solution():
             if break_flag:
                 break
 
+        if sum(A_li)==0:
+            break
+
         #3.1 change marbles
-        new_A_li=[]
+        new_A_li = []
         prev_marble = A_li[0]
         count_same_marble=1
         for idx3 in range(1,len(A_li)):
@@ -129,8 +133,6 @@ def solution():
             if break_flag:
                 break
             iter_times += di % 2
-        print(f"_____AFTER BLIZARD {idx+1}_____")
-        p(A)
 
     return ans[1] + ans[2]*2 + ans[3]*3
 
