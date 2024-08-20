@@ -12,29 +12,48 @@ Debug Log
 
 """
 
-n = int(input())
-result=[]
+# n = int(input())
+# result=[]
+#
+# max_num = 0
+# for num in range(1,n+1):
+#
+#     # 1부터 n까지 숫자를 전부 탐색
+#     buffer=[n]
+#     buffer.append(num)
+#
+#     # 규칙에 의거, 뺄샘 안될때까지 전수조사
+#     for i in range(n):
+#         try:
+#             temp = buffer[i]-buffer[i+1]
+#         except:
+#             break
+#         if temp >= 0:
+#             buffer.append(temp)
+#
+#     if len(buffer) > max_num:   # 구현 코드의 위치가 문제였다!
+#         max_num=len(buffer)
+#         result=buffer
+#
+# print(len(result))
+# for i in result:
+#     print(i,end=' ')
 
-max_num = 0
-for num in range(1,n+1):
-    
-    # 1부터 n까지 숫자를 전부 탐색
-    buffer=[n]  
-    buffer.append(num)
-    
-    # 규칙에 의거, 뺄샘 안될때까지 전수조사
-    for i in range(n):
-        try:
-            temp = buffer[i]-buffer[i+1]
-        except:
-            break
-        if temp >= 0:
-            buffer.append(temp)
-    
-    if len(buffer) > max_num:   # 구현 코드의 위치가 문제였다!
-        max_num=len(buffer)
-        result=buffer
-            
-print(len(result))
-for i in result:
-    print(i,end=' ')
+def solution():
+    N = int(input())
+    max_arr=[]
+    for num in range(N,0,-1):
+        tmp_arr = [N, num]
+        nxt_num = tmp_arr[-2] - tmp_arr[-1]
+        while nxt_num >= 0:
+            tmp_arr.append(nxt_num)
+            nxt_num = tmp_arr[-2] - tmp_arr[-1]
+
+        if len(max_arr)<len(tmp_arr):
+            max_arr = tmp_arr
+
+    print(len(max_arr))
+    for ele in max_arr:
+        print(ele, end=' ')
+
+solution()
