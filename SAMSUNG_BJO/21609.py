@@ -153,7 +153,3 @@ for _ in range(20000000):
     A = gravity_and_rotation(A)
 
 print(score)
-
-
-
-
