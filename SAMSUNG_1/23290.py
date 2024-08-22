@@ -39,8 +39,8 @@ def solution():
     sr-=1; sc-=1
     dr=[0,-1,-1,-1,0,1,1,1]
     dc=[-1,-1,0,1,1,1,0,-1]
-    dsr=[-1,1,0,0]
-    dsc=[0,0,-1,1]
+    dsr=[-1,0,1,0]
+    dsc=[0,-1,0,1]
 
     smell_cur = set()
     smell1 = set()
@@ -56,7 +56,7 @@ def solution():
             return False
         return True
 
-    for _ in range(S):
+    for step in range(S):
         A_new = []
         for _ in range(4):
             line = []
