@@ -18,7 +18,7 @@ for _ in range(n):
 def travel(i,j):
     if tray[i][j]==1: 
         return False
-    9
+
     tray[i][j] = 1
     if i>0:
         travel(i-1,j)
