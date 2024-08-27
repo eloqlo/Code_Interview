@@ -13,4 +13,3 @@ def solution():
         for c in range(3):
             if A[r][c]==0:
                 zr,zc = r,c
-
