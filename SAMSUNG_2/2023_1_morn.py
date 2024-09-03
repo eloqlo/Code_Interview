@@ -1,124 +1,231 @@
-from collections import deque
-def solution():
-
-    # INPUTS
-    L, N, Q = map(int, input().split())
-    # map
-    A = []
-    for _ in range(L):
-        line = list(map(int, input().split()))
-        A.append(line)
-    # loc
-    knights = {}
-    for ki in range(N):
-        r, c, h, w, k = map(int, input().split())
-        r -= 1; c -= 1; ki+=1
-        knights[ki] = ((r, c, h, w, k, 0))
-
-    order = []
-    for _ in range(Q):
-        ki, d = map(int, input().split())
-        order.append((ki, d))
-
-    # print("일단 함정/벽 지도")
-    # p(A)
-
-
-    for ki, di in order:
-        # print(f"______{ki}에 대한 명령______")
-        if knights[ki][4]<=0:   #명령 받은애 죽어있어.
-            # print("명령 받은애가 죽어있네")
-            continue
-
-        # print("수행 전 기사 지도")
-        # p(knights, L)
-        # print("변하기 전 - ",knights)
-        new_knights = update(A,knights,ki,di)
-        if new_knights!=None:
-            # print("변한 기사들 - ",new_knights)
-            knights = new_knights
-
-            # print("수행 후 기사 지도")
-            # p(knights, L)
-        # else:
-        #     print("안 변했다이")
-
-    answer = 0
-    for ki in knights.keys():
-        _,_,_,_,k,d = knights[ki]
-        if k>0:
-            answer += d
-
-    return answer
-
-
-
-# 업데이트된 B랑, knights, 총 damge 반환.
-def update(A, knights, ki, di):
-
-    knights = knights.copy()
-    L = len(A)
-    diff = [(-1, 0), (0, 1), (1, 0), (0, -1)]  # 0상 1우 2하 3좌
-    K = [[0]*L for _ in range(L)]
-    for tmp_ki in knights.keys():
-        r,c,h,w,health,damge = knights[tmp_ki]
-        if health<=0:
-            continue
-        for kr in range(r,r+h):
-            for kc in range(c,c+w):
-                if K[kr][kc]>0:
-                    raise Exception(f"{tmp_ki}넣으려 한 {kr,kc}에 {K[kr][kc]}가 있네")
-                K[kr][kc] = tmp_ki
-
-    # knights를 업데이트한다 - BFS
-    _, _, _, _, backup_k, backup_d = knights[ki]
-    dq = deque([ki])
-    nxt_dq = set()
-    while dq:
-        curki = dq.pop()
-        cr, cc, ch, cw, ck, cd = knights[curki]
-        dr, dc = diff[di]
-
-        for nr in range(cr+dr,cr+dr+ch):
-            for nc in range(cc+dc,cc+dc+cw):
-
-                if not (0<=nr<L and 0<=nc<L) or A[nr][nc]==2:
-                    return None
-
-                if A[nr][nc]==1:
-                    ck -= 1
-                    cd += 1
-
-                if K[nr][nc] != curki and K[nr][nc]>0 and K[nr][nc] not in nxt_dq:
-                    nxt_dq.add(K[nr][nc])
-
-        knights[curki] = (cr+dr, cc+dc, ch, cw, ck, cd)
-        dq = nxt_dq
-
-    r,c,h,w,_,_ = knights[ki]
-    knights[ki] = (r,c,h,w,backup_k, backup_d)
-    return knights
-
-    # 새로 B 만든다.
-
-def p(knights,L):
-
-    K = [[0]*L for _ in range(L)]
-    for ki in knights.keys():
-        r,c,h,w,k,d = knights[ki]
-        if k<=0:
-            continue
-        for nr in range(r,r+h):
-            for nc in range(c,c+w):
-                K[nr][nc] = ki
-
-    for l in K:
+def p(A):
+    print()
+    for l in A:
         for e in l:
-            print(e, end=' ')
+            print(e, end='\t')
         print()
     print()
 
-# A = [[0, 0, 1, 0], [0, 0, 1, 0], [1, 1, 0, 1], [0, 0, 2, 0]]
-# knights = {1: (0, 1, 2, 1, 5, 0), 2: (1, 0, 2, 1, 1, 0), 3: (2, 1, 1, 2, 3, 0)}
-# orders = [(1, 2), (2, 1), (3, 3)]
+
+def pt(A, li, wr,wc,sr,sc):
+    print()
+    for r in range(len(A)):
+        for c in range(len(A[0])):
+            if (r,c)==(wr,wc):
+                print(f"<{A[r][c]}>", end='\t')
+            elif (r,c)==(sr,sc):
+                print(f"+{A[r][c]}+", end='\t')
+            elif (r,c) in li:
+                print(f"({A[r][c]})", end='\t')
+            else:
+                if A[r][c]==0:
+                    print(A[r][c], end='\t')
+                else:
+                    print(".", end='\t')
+        print()
+    print()
+
+
+
+
+def find_weak_strong(A, B):
+    low_atk = 1e6
+    low_atk_recent_turn = None
+    low_atk_rpc = None
+    low_atk_row = None
+
+    high_atk = -1
+    high_atk_old_turn = None
+    high_atk_rpc = None
+    high_atk_r = None
+
+    wr, wc = None, None
+    sr, sc = None, None
+    for r in range(len(A)):
+        for c in range(len(A[0])):
+            if A[r][c] > 0:
+                if A[r][c] > high_atk:
+                    high_atk = A[r][c]
+                    high_atk_old_turn = B[r][c]
+                    high_atk_rpc = r + c
+                    high_atk_r = r
+                    sr, sc = r, c
+                elif A[r][c] == high_atk:
+                    if B[r][c] < high_atk_old_turn:
+                        high_atk = A[r][c]
+                        high_atk_old_turn = B[r][c]
+                        high_atk_rpc = r + c
+                        high_atk_r = r
+                        sr, sc = r, c
+                    elif B[r][c] == high_atk_old_turn:
+                        if r + c < high_atk_rpc:
+                            high_atk = A[r][c]
+                            high_atk_old_turn = B[r][c]
+                            high_atk_rpc = r + c
+                            high_atk_r = r
+                            sr, sc = r, c
+                        elif r + c == high_atk_rpc:
+                            if r < high_atk_r:
+                                high_atk = A[r][c]
+                                high_atk_old_turn = B[r][c]
+                                high_atk_rpc = r + c
+                                high_atk_r = r
+                                sr, sc = r, c
+
+                if A[r][c] < low_atk:
+                    low_atk = A[r][c]
+                    low_atk_recent_turn = B[r][c]
+                    low_atk_rpc = r + c
+                    low_atk_row = r
+                    wr, wc = r, c
+                elif A[r][c] == low_atk:
+                    if B[r][c] > low_atk_recent_turn:
+                        low_atk = A[r][c]
+                        low_atk_recent_turn = B[r][c]
+                        low_atk_rpc = r + c
+                        low_atk_row = r
+                        wr, wc = r, c
+                    elif B[r][c] == low_atk_recent_turn:
+                        if low_atk_rpc < r + c:
+                            low_atk = A[r][c]
+                            low_atk_recent_turn = B[r][c]
+                            low_atk_rpc = r + c
+                            low_atk_row = r
+                            wr, wc = r, c
+                        elif low_atk_rpc == r + c:
+                            if low_atk_row < r:
+                                low_atk = A[r][c]
+                                low_atk_recent_turn = B[r][c]
+                                low_atk_rpc = r + c
+                                low_atk_row = r
+                                wr, wc = r, c
+
+    return wr, wc, sr, sc
+
+
+def find_route(A, wr, wc, sr, sc):
+    N, M = len(A), len(A[0])
+    C, timer = bfs(A, wr, wc, sr, sc)
+    if C == None:
+        return None
+
+    track, _ = dfs(C, wr, wc, sr, sc, [(wr, wc)])
+    return track
+
+
+def dfs(C, r, c, sr, sc, track):
+    diff = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # 우하좌상
+    N, M = len(C), len(C[0])
+
+    cur_time = C[r][c]
+    for dr, dc in diff:
+        nr, nc = r + dr, c + dc
+        nr, nc = (nr + N) % N, (nc + M) % M
+        if C[nr][nc] == cur_time + 1:
+            if (nr, nc) == (sr, sc):
+                return track + [(nr, nc)], True
+            answer, end_flag = dfs(C, nr, nc, sr, sc, track + [(nr, nc)])
+            if end_flag:
+                return answer, end_flag
+
+    return None, None
+
+
+def bfs(A, wr, wc, sr, sc):
+    diff = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # 우하좌상
+    N, M = len(A), len(A[0])
+
+    C = [[0] * M for _ in range(N)]
+    visit = [[0] * M for _ in range(N)]
+    visit[wr][wc] = 1
+    timer = 1
+    dq = [(wr, wc)]
+    while dq:
+        nxt_dq = []
+        for cr, cc in dq:
+            C[cr][cc] = timer
+            if (cr, cc) == (sr, sc):
+                return C, timer
+            for dr, dc in diff:
+                nr, nc = cr + dr, cc + dc
+                nr, nc = (nr + N) % N, (nc + M) % M
+                if A[nr][nc] != 0 and visit[nr][nc] == 0:
+                    visit[nr][nc] = 1
+                    nxt_dq.append((nr, nc))
+        dq = nxt_dq
+        timer += 1
+
+    return None, None
+
+
+def solution():
+    # INPUTS
+    N, M, K = map(int, input().split())
+    A = []
+    for r in range(N):
+        line = list(map(int, input().split()))
+        A.append(line)
+    B = [[0] * M for _ in range(N)]  # 공격한 턴 저장
+
+    for turn_k in range(1, K + 1):
+        # 공격자 선정
+        wr, wc, sr, sc = find_weak_strong(A, B)
+        """
+        
+        """
+        if wr == None or sr == None:
+            return 0
+        elif (wr, wc) == (sr, sc):
+            break
+        B[wr][wc] = turn_k
+        A[wr][wc] += N + M
+
+        # 최단 경로 찾기 - BFS
+        track = find_route(A, wr, wc, sr, sc)
+        ATK = A[wr][wc]
+        got_hit = set([(wr, wc)])
+        got_hit.add((sr, sc))
+
+        if track == None:
+            # 포탄 공격
+            # TODO SANITY CHECK
+            debug_tmp = [(sr,sc)]
+            A[sr][sc] = max(0, A[sr][sc] - ATK)
+            for dr, dc in [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]:
+                nr, nc = sr + dr, sc + dc
+                nr, nc = (nr + N) % N, (nc + M) % M
+                if (nr, nc) == (wr, wc):
+                    continue
+                A[nr][nc] = max(0, A[nr][nc] - ATK // 2)
+                got_hit.add((nr, nc))
+                debug_tmp.append((nr,nc))
+
+            pt(A,debug_tmp,wr,wc,sr,sc)
+
+        else:
+            # 레이저 공격
+            for nr, nc in track[1:-1]:
+                A[nr][nc] = max(0, A[nr][nc] - ATK // 2)
+                got_hit.add((nr, nc))
+            A[sr][sc] = max(0, A[sr][sc] - ATK)
+
+            pt(A,track,wr,wc,sr,sc)
+
+        # 포탑 정비 - 공격자, 피격자 빼고 +1
+        for tmpr in range(N):
+            for tmpc in range(M):
+                if A[tmpr][tmpc] > 0 and (tmpr, tmpc) not in got_hit:
+                    A[tmpr][tmpc] += 1
+
+
+
+        input()
+
+
+    max_val = 0
+    for line in A:
+        max_val = max(max_val, max(line))
+    return max_val
+
+
 print(solution())
