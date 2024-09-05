@@ -18,29 +18,29 @@ def pt(A, li, wr,wc,sr,sc):
             elif (r,c) in li:
                 print(f"({A[r][c]})", end='\t')
             else:
-                if A[r][c]==0:
-                    print(A[r][c], end='\t')
-                else:
-                    print(".", end='\t')
+                print(A[r][c], end='\t')
         print()
     print()
 
 
-
-
+#TODO 이거 더 간단히 코딩 못하려나? 헷갈린다.
+"""
+공격자, 피격자 선정 조건이 가독성 떨어져서 충분히 조건체크가 안됐다.
+"""
 def find_weak_strong(A, B):
     low_atk = 1e6
     low_atk_recent_turn = None
     low_atk_rpc = None
-    low_atk_row = None
+    low_atk_col = None
 
     high_atk = -1
     high_atk_old_turn = None
     high_atk_rpc = None
-    high_atk_r = None
+    high_atk_col = None
 
     wr, wc = None, None
     sr, sc = None, None
+
     for r in range(len(A)):
         for c in range(len(A[0])):
             if A[r][c] > 0:
@@ -48,59 +48,87 @@ def find_weak_strong(A, B):
                     high_atk = A[r][c]
                     high_atk_old_turn = B[r][c]
                     high_atk_rpc = r + c
-                    high_atk_r = r
+                    high_atk_col = c
                     sr, sc = r, c
                 elif A[r][c] == high_atk:
                     if B[r][c] < high_atk_old_turn:
                         high_atk = A[r][c]
                         high_atk_old_turn = B[r][c]
                         high_atk_rpc = r + c
-                        high_atk_r = r
+                        high_atk_col = c
                         sr, sc = r, c
                     elif B[r][c] == high_atk_old_turn:
                         if r + c < high_atk_rpc:
                             high_atk = A[r][c]
                             high_atk_old_turn = B[r][c]
                             high_atk_rpc = r + c
-                            high_atk_r = r
+                            high_atk_col = c
                             sr, sc = r, c
                         elif r + c == high_atk_rpc:
-                            if r < high_atk_r:
+                            if c < high_atk_col:
                                 high_atk = A[r][c]
                                 high_atk_old_turn = B[r][c]
                                 high_atk_rpc = r + c
-                                high_atk_r = r
+                                high_atk_col = c
                                 sr, sc = r, c
 
                 if A[r][c] < low_atk:
                     low_atk = A[r][c]
                     low_atk_recent_turn = B[r][c]
                     low_atk_rpc = r + c
-                    low_atk_row = r
+                    low_atk_col = c
                     wr, wc = r, c
                 elif A[r][c] == low_atk:
                     if B[r][c] > low_atk_recent_turn:
                         low_atk = A[r][c]
                         low_atk_recent_turn = B[r][c]
                         low_atk_rpc = r + c
-                        low_atk_row = r
+                        low_atk_col = c
                         wr, wc = r, c
                     elif B[r][c] == low_atk_recent_turn:
                         if low_atk_rpc < r + c:
                             low_atk = A[r][c]
                             low_atk_recent_turn = B[r][c]
                             low_atk_rpc = r + c
-                            low_atk_row = r
+                            low_atk_col = c
                             wr, wc = r, c
                         elif low_atk_rpc == r + c:
-                            if low_atk_row < r:
+                            if low_atk_col < c:
                                 low_atk = A[r][c]
                                 low_atk_recent_turn = B[r][c]
                                 low_atk_rpc = r + c
-                                low_atk_row = r
+                                low_atk_col = c
                                 wr, wc = r, c
 
     return wr, wc, sr, sc
+
+def find_weak_strong2(A,B):
+    """
+    여러 조건 고려하는건, 이렇게 sort해주면 덜 헷갈리는구나!
+    """
+    min_val, max_val = 1e6, -1
+    for r in range(len(A)):
+        for c in range(len(A[0])):
+            if A[r][c] > 0 and A[r][c] > max_val:
+                max_val = A[r][c]
+            if A[r][c] > 0 and A[r][c] < min_val:
+                min_val = A[r][c]
+
+    min_arr = []
+    max_arr = []
+    for r in range(len(A)):
+        for c in range(len(A[0])):
+            if A[r][c] == min_val:
+                min_arr.append((B[r][c], r+c, c, (r,c)))
+            if A[r][c] == max_val:
+                max_arr.append((B[r][c], r+c, c, (r,c)))
+
+    min_arr.sort(key=lambda x:(-x[0],-x[1],-x[2]))
+    max_arr.sort(key=lambda x:(x[0],x[1],x[2]))
+    _,_,_,(wr,wc) = min_arr[0]
+    _,_,_,(sr,sc) = max_arr[0]
+
+    return wr,wc,sr,sc
 
 
 def find_route(A, wr, wc, sr, sc):
@@ -111,7 +139,6 @@ def find_route(A, wr, wc, sr, sc):
 
     track, _ = dfs(C, wr, wc, sr, sc, [(wr, wc)])
     return track
-
 
 def dfs(C, r, c, sr, sc, track):
     diff = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # 우하좌상
@@ -162,23 +189,22 @@ def solution():
     # INPUTS
     N, M, K = map(int, input().split())
     A = []
-    for r in range(N):
+    for _ in range(N):
         line = list(map(int, input().split()))
         A.append(line)
     B = [[0] * M for _ in range(N)]  # 공격한 턴 저장
 
     for turn_k in range(1, K + 1):
         # 공격자 선정
-        wr, wc, sr, sc = find_weak_strong(A, B)
-        """
-        
-        """
+        wr, wc, sr, sc = find_weak_strong2(A, B)
+
         if wr == None or sr == None:
             return 0
         elif (wr, wc) == (sr, sc):
             break
+
         B[wr][wc] = turn_k
-        A[wr][wc] += N + M
+        A[wr][wc] += N+M
 
         # 최단 경로 찾기 - BFS
         track = find_route(A, wr, wc, sr, sc)
@@ -189,7 +215,7 @@ def solution():
         if track == None:
             # 포탄 공격
             # TODO SANITY CHECK
-            debug_tmp = [(sr,sc)]
+            track = [(sr,sc)]
             A[sr][sc] = max(0, A[sr][sc] - ATK)
             for dr, dc in [(-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)]:
                 nr, nc = sr + dr, sc + dc
@@ -198,10 +224,7 @@ def solution():
                     continue
                 A[nr][nc] = max(0, A[nr][nc] - ATK // 2)
                 got_hit.add((nr, nc))
-                debug_tmp.append((nr,nc))
-
-            pt(A,debug_tmp,wr,wc,sr,sc)
-
+                track.append((nr,nc))
         else:
             # 레이저 공격
             for nr, nc in track[1:-1]:
@@ -209,18 +232,11 @@ def solution():
                 got_hit.add((nr, nc))
             A[sr][sc] = max(0, A[sr][sc] - ATK)
 
-            pt(A,track,wr,wc,sr,sc)
-
         # 포탑 정비 - 공격자, 피격자 빼고 +1
         for tmpr in range(N):
             for tmpc in range(M):
                 if A[tmpr][tmpc] > 0 and (tmpr, tmpc) not in got_hit:
                     A[tmpr][tmpc] += 1
-
-
-
-        input()
-
 
     max_val = 0
     for line in A:
