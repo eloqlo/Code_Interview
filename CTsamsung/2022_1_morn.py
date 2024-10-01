@@ -3,148 +3,182 @@ def solution():
     # INPUTS
     N,M,H,K = map(int,input().split())
     A = [[[] for _ in range(N)] for _ in range(N)]
-    runners=[]
-    for ri in range(1,M+1):
-        r,c,d = map(int,input().split())
-        r-=1; c-=1
-        runners.append([ri,r,c,d])
-        A[r][c].append(ri)
-    trees = set()
+    runners = {}
+    for m in range(M):
+        x,y,d = map(int, input().split())
+        runners[m+1] = [x-1,y-1,d,0]
+        A[x-1][y-1].append(m+1)
+    # trees = set()
+    T = [[0]*N for _ in range(N)]
     for _ in range(H):
-        tr,tc = map(int,input().split())
-        tr-=1; tc-=1
-        trees.add((tr,tc))
-    dr = [0,0,1,-1]   # 좌 우(1) 하(2) 상
-    dc = [-1,1,0,0]
+        x,y = map(int,input().split())
+        # trees.add((x-1,y-1))
+        T[x-1][y-1] = 1
+    sx,sy,sd = N//2, N//2, 0
+
+    sdx = [-1, 0, 1, 0]
+    sdy = [0, 1, 0, -1]
+    rdx = {1:[0,0], 2:[1,-1]}   # 1좌우 2하상
+    rdy = {1:[1,-1], 2:[0,0]}
     SCORE = 0
-    sr, sc, sd = N//2, N//2, 0
-    diff = [(-1,0),(0,1),(1,0),(0,-1)]  # 상 우 하 좌
 
-    gen_get_spos = get_spos(N)
-    s_order_save = [(sr,sc,sd)]
-    s_reverse = False
-    for t in range(1, K+1):
-        moving_runners_idx = find_runners(sr,sc,A)
+    # [OK]
+    gen_catcher_loc = get_catcher_loc(N)
 
-        # RUNNERS MOVE
-        for ri in list(moving_runners_idx):
-            _,rr,rc,rd = runners[ri-1]
-            nr,nc = rr+dr[rd], rc+dc[rd]
-            if 0<=nr<N and 0<=nc<N:
-                if (nr,nc)==(sr,sc):
+    # print("START")
+    # pp(A,T,sx,sy)
+
+    for turn in range(1,K+1):
+        # get moving runners [OK]
+        moving_runners = get_moving_runners(A,sx,sy)
+
+        # runners move [OK]
+        for ri in moving_runners:
+            x,y,d1,d2 = runners[ri]
+            nx, ny = x+rdx[d1][d2], y+rdy[d1][d2]
+            if 0<=nx<N and 0<=ny<N:
+                if (nx,ny)==(sx,sy):
                     continue
+                runners[ri] = [nx,ny,d1,d2]
+                A[x][y].remove(ri)
+                A[nx][ny].append(ri)
             else:
-                if rd==1:
-                    rd=0
-                elif rd==0:
-                    rd=1
-                elif rd==2:
-                    rd=3
-                else:
-                    rd=2
-                runners[ri-1][-1] = rd
-                nr, nc = rr + dr[rd], rc + dc[rd]
-                if (nr, nc) == (sr, sc):
+                d2 = (d2+1)%2
+                nx, ny = x + rdx[d1][d2], y + rdy[d1][d2]
+                if (nx,ny)==(sx,sy):
+                    runners[ri][3] = d2
                     continue
-            runners[ri-1][1] = nr
-            runners[ri-1][2] = nc
-            A[rr][rc].remove(ri)
-            A[nr][nc].append(ri)
+                runners[ri] = [nx,ny,d1,d2]
+                A[x][y].remove(ri)
+                A[nx][ny].append(ri)
 
-        # 술레 MOVE
-        sr,sc,sd = next(gen_get_spos)
-        catch_count = 0
-        for tmp in range(3):
-            search_r, search_c = sr+diff[sd][0]*tmp, sc+diff[sd][1]*tmp
-            if 0<=search_r<N and 0<=search_c<N:
-                if (search_r,search_c) in trees:
-                    continue
-                if A[search_r][search_c]:
-                    for runner_idx in A[search_r][search_c]:
-                        runners[runner_idx-1][1] = None
-                        runners[runner_idx-1][2] = None
-                        A[search_r][search_c] = []
-                        catch_count += 1
-        SCORE += t*catch_count
-    print(SCORE)
+        # print("AF MOVE")
+        # pp(A,T,sx,sy)
 
-def get_spos(N):
-    diff = [(-1, 0), (0, 1), (1, 0), (0, -1)]  # 상 우 하 좌
-    sr, sc, sd = N//2, N//2, 0
-    repeat = 0
-    backup_loc = [(sr, sc)]
-    backup_di = [sd]
-    end_flag = False
-    rev = False
-    while True:
-        if not rev:
-            repeat += 1
+        # catcher move
+        sx, sy, sd = next(gen_catcher_loc)
+        catched = []
+        for foo in range(3):
+            nsx, nsy = sx+sdx[sd]*foo, sy+sdy[sd]*foo
+            if 0<=nsx<N and 0<=nsy<N and T[nsx][nsy]==0:
+                catched += A[nsx][nsy]
+        for cri in catched:
+            x, y, d1, d2 = runners[cri]
+            A[x][y] = []
+            runners[cri] = None
+        SCORE += turn * len(catched)
+
+        # print()
+        # print("AF S MOVE")
+        # if catched:
+        #     print('----------',len(catched),"*",turn)
+        # print(catched)
+        # pp(A,T,sx,sy)
+        # print("____________________")
+        # input()
+
+    return SCORE
+
+
+# OK
+def get_catcher_loc(N):
+
+    sdx = [-1, 0, 1, 0]
+    sdy = [0, 1, 0, -1]
+
+    while 1:
+        sx, sy, sd = N // 2, N // 2, 0
+        backup_loc = [(sx,sy)]
+        backup_d = [sd]
+        count = 1
+        while 1:
             for _ in range(2):
-                for r_idx in range(repeat):
-                    if (sr,sc)==(0,0):
-                        end_flag = True
-                        rev = True
-                        break
-                    sr, sc = sr + diff[sd][0], sc + diff[sd][1]
-                    if r_idx == repeat - 1:
+                for steps in range(count):
+                    sx = sx + sdx[sd]
+                    sy = sy + sdy[sd]
+                    if steps == count-1:
                         sd = (sd + 1) % 4
-                    backup_loc.append((sr, sc))
-                    backup_di.append(sd)
-                    if (sr,sc) == (0,0):
-                        sd = 2
-                    yield sr, sc, sd
-                if end_flag:
-                    backup_loc.pop()
-                    backup_di.pop()
-                    backup_di.pop()
-                    backup_loc.reverse()
-                    backup_di.reverse()
-                    backup_di.append(2)
-                    end_flag = False
+                    if (sx,sy)==(0,0):
+                        sd = 2  # DOWN
+                        yield sx, sy, sd
+                        backup_d.pop()
+                        break
+
+                    backup_loc.append((sx,sy))
+                    backup_d.append(sd)
+                    yield sx,sy,sd
+                if (sx,sy)==(0,0):
                     break
-        else:
-            for (sr,sc),sd in zip(backup_loc, backup_di):
-                sd = (sd+2)%4
-                yield sr,sc,sd
-            rev = False
-            backup_loc = [(sr, sc)]
-            backup_di = [sd]
-            repeat = 0
+            if (sx,sy)==(0,0):
+                break
+            count+=1
 
-def find_runners(sr,sc,A):
-    dr = [0, 0, 1, -1]
-    dc = [-1, 1, 0, 0]
-    found_runners = set()
-    length = 3
+        backup_loc.reverse()
+        backup_d.reverse()
+        new_backup_d = []
+        for ele in backup_d:
+            new_backup_d.append((ele+2)%4)
+        new_backup_d.append(0)
+        backup_d = new_backup_d
+        for (sx,sy), sd in zip(backup_loc, backup_d):
+            yield sx,sy,sd
+
+# OK
+def get_moving_runners(A,sx,sy):
+    dx = [-1, 0, 1, 0]
+    dy = [0, 1, 0, -1]
     N = len(A)
-    dq = [(sr,sc)]
-    visit = set([(sr,sc)])
-    for _ in range(length):
-        nxt_dq=[]
-        while dq:
-            cr,cc = dq.pop()
-            for di in range(4):
-                nr,nc = cr+dr[di], cc+dc[di]
-                if 0<=nr<N and 0<=nc<N and (nr,nc) not in visit:
+    MAX_MOVE = 3
+    dq = [(sx,sy)]
+    B = [[0]*N for _ in range(N)]
+    B[sx][sy] = 1
 
-                    nxt_dq.append((nr,nc))
-                    visit.add((nr,nc))
-                    if A[nr][nc]:
-                        for ele in A[nr][nc]:
-                            found_runners.add(ele)
+    moving_runners = []
+    if A[sx][sy]:
+        moving_runners += A[sx][sy]
+
+    for _ in range(MAX_MOVE):
+        nxt_dq = []
+        for x,y in dq:
+            for d in range(4):
+                nx, ny = x+dx[d], y+dy[d]
+                if 0<=nx<N and 0<=ny<N and B[nx][ny]==0:
+                    nxt_dq.append((nx,ny))
+                    B[nx][ny] = 1
+                    if len(A[nx][ny])>0:
+                        moving_runners += A[nx][ny]
         dq = nxt_dq
-    return found_runners
 
+    return moving_runners
 
-def p(A,sr,sc):
-    for r,l in enumerate(A):
-        for c,e in enumerate(l):
-            if (r,c)==(sr,sc):
-                print('S', end=' ')
-            elif e!=0:
-                print(e, end=' ')
+def pp(A,T,sx,sy):
+    for x,l in enumerate(A):
+        for y,e in enumerate(l):
+            if T[x][y]==1:
+                print("*",end='')
+            if (x,y)==(sx,sy):
+                print("S",end='')
+            if len(e)>0:
+                print(','.join(list(map(str,e))), end = '\t')
             else:
-                print(".", end=' ')
+                print('.', end='\t')
         print()
 
-solution()
+def p(B):
+    for l in B:
+        for e in l:
+            print(e, end='\t')
+        print()
+
+
+# N = int(input())
+# M = int(input())
+# A = [[[] for _ in range(N)] for _ in range(N)]
+# for m in range(M):
+#     x,y = map(int,input().split())
+#     A[x][y].append(m+1)
+# pp(A)
+#
+# print(get_moving_runners(A, len(A)//2, len(A)//2))
+
+print(solution())
