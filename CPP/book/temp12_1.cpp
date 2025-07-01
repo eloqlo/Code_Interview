@@ -4,6 +4,11 @@
 
 using namespace std;
 
+template <typename T>
+T data_sum(T operand1, T operand2){
+    return operand1+operand2;
+}
+
 int main(){
     // vector<int> vec;
 
