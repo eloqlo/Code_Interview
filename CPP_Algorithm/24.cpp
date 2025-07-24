@@ -10,8 +10,8 @@ int main(){
 
     int N;
     cin >> N;
-    for (int i = pow(10,N-1) - 1; i<pow(10,N); i++){
-        if (i==0 or i==1) 
+    for (int i = pow(10,N-1); i < pow(10,N); i++){
+        if (i==1)
             continue;
 
         
