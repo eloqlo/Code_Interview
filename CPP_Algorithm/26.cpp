@@ -37,42 +37,48 @@ int main()
         fill(A[i], A[i]+SIZE+1, 0);   // A[i]를 0으로 초기화. heap에 어떤 값이 있을지 모르기에 초기화 필수.
     }
     
-    int n,m,v;
+    int n, m, v;
     cin >> n >> m >> v;
     node *nd = new node[n+1];
     int nd1, nd2;
     for (int i=0; i<m; i++)
     {
         cin >> nd1 >> nd2;
-        if (A[nd1][nd2] == 0)
+        if (A[nd1][nd2] == 0){
             nd[nd1].connected.push_back(nd2);
             nd[nd2].connected.push_back(nd1);
             A[nd2][nd1] = 1;
             A[nd1][nd2] = 1;
-    }
-    for (int i=0; i<SIZE+1; i++){
-        delete[] A[i];
-        nd[i].visit_bfs = 0;
-        nd[i].visit_dfs = 0;
-    }
+        }
 
+    }
     for (int i=1; i<n+1; i++)
     {
+        nd[i].visit_bfs = 0;
+        nd[i].visit_dfs = 0;
         sort(nd[i].connected.begin(), nd[i].connected.end());
     }
-
 
     //DFS
     DFS(nd, v);
     cout << '\n';
 
     //BFS
-    vector<int> q = {v};
-    while (q.size() > 0){
-        vector<int> nxt_nodes;
-        for (int cur_nd : q){
-            //TODO
+    deque<int> dq = {v};    // 앞에서 erase 빈번히 발생 -> vector보다 메모리 분할관리하는 deque가 시간복잡도상 적절
+    nd[v].visit_bfs = 1;
+    while (dq.size() > 0){
+        cout << dq.front() << ' ';
+        for (int nxt_nd : nd[dq[0]].connected){
+            if (nd[nxt_nd].visit_bfs == 0){
+                nd[nxt_nd].visit_bfs = 1;
+                dq.push_back(nxt_nd);
+            }
         }
-        q = nxt_nodes;
+        dq.pop_front();
     }
+
+    for (int i=0; i<SIZE+1; i++){
+        delete[] A[i];
+    }
+    return 0;
 }
