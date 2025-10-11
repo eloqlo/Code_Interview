@@ -13,8 +13,6 @@ typedef struct{
     int c;
 } loc;
 
-vector<vector<place>> arr;
-
 int main(){
     ios::sync_with_stdio(false);
     cin.tie(0);
@@ -25,6 +23,7 @@ int main(){
     vector<int> answers;
 
     for (int i=0; i<T; i++){
+        vector<vector<place>> arr;
         int M, N, K, r, c;
         cin >> M >> N >> K;
         for (int i=0; i<N; i++){
